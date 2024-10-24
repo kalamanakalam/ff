@@ -6,21 +6,49 @@ void turn_right() {
     turn_left();
 }
 
+bool right_is_blocked() {
+    turn_right();
+    if (!front_is_clear()) {
+        turn_left();
+        return true;
+    }
+    turn_left();
+    return false;
+}
+
+bool left_is_blocked() {
+    turn_left();
+    if (!front_is_clear()) {
+        turn_right();
+        return true;
+    }
+    turn_right();
+    return false;
+}
+
 void jump_over_right() {
     turn_left();
-    while (!right_is_clear()) { // Пока справа стена, двигайся вперед
+    while (right_is_blocked()) {
+        if (!front_is_clear()) {  // Проверяем, если впереди стена
+            turn_left();
+            return;  // Выходим, если тупик
+        }
         step();
     }
     turn_right();
     step();
-    while (!right_is_clear()) { // Снова проверяем, пока справа стена
+    while (right_is_blocked()) {
+        if (!front_is_clear()) {  // Проверяем, если впереди стена
+            turn_right();
+            return;  // Выходим, если тупик
+        }
         step();
     }
     turn_right();
     step();
-    while (!right_is_clear() && front_is_clear()) { // Двигаемся, пока справа стена и впереди ничего нет
-        if (beepers_present()) { // Если есть бипер, останавливаемся
-            return;
+    while (right_is_blocked() && front_is_clear()) {
+        if (beepers_present()) {
+            return;  // Остановимся, если нашли бипер
         }
         step();
     }
@@ -29,55 +57,55 @@ void jump_over_right() {
 
 void jump_over_left() {
     turn_right();
-    while (!left_is_clear()) { // Пока слева стена, двигайся вперед
+    while (left_is_blocked()) {
+        if (!front_is_clear()) {  // Проверяем, если впереди стена
+            turn_right();
+            return;  // Выходим, если тупик
+        }
         step();
     }
     turn_left();
     step();
-    while (!left_is_clear()) { // Снова проверяем, пока слева стена
+    while (left_is_blocked()) {
+        if (!front_is_clear()) {  // Проверяем, если впереди стена
+            turn_left();
+            return;  // Выходим, если тупик
+        }
         step();
     }
     turn_left();
     step();
-    while (!left_is_clear() && front_is_clear()) { // Двигаемся, пока слева стена и впереди ничего нет
-        if (beepers_present()) { // Если есть бипер, останавливаемся
-            return;
+    while (left_is_blocked() && front_is_clear()) {
+        if (beepers_present()) {
+            return;  // Остановимся, если нашли бипер
         }
         step();
     }
     turn_right();
-    if (beepers_present()) { // Еще раз проверяем наличие бипера
-        return;
+    if (beepers_present()) {
+        return;  // Остановимся, если нашли бипер
     }
 }
 
 int main() {
-    turn_on("task_1.kw");  // Включаем задачу
-    set_step_delay(20);     // Устанавливаем задержку для видимости шагов
-
-    put_beeper();           // Ставим бипер для ориентира
-
-    // Пытаемся перепрыгнуть вправо до тех пор, пока не встретим бипер
-    while (true) {
-        jump_over_right();
-        if (beepers_present()) { // Как только находим бипер, останавливаемся
-            break;
-        }
+    turn_on("task_1.kw");
+    set_step_delay(20);
+    put_beeper();
+    
+    // Пытаемся прыгнуть через препятствие справа
+    while (!beepers_present()) {
+        jump_over_right();  // Прыжок через препятствие справа
     }
     
-    pick_beeper();  // Подбираем найденный бипер
-    turn_right();   // Поворачиваем направо
+    pick_beeper();
+    turn_right();
     
-    // Пытаемся перепрыгнуть влево до тех пор, пока не встретим бипер
-    while (true) {
-        jump_over_left();
-        if (beepers_present()) { // Как только находим бипер, останавливаемся
-            break;
-        }
+    // Пытаемся прыгнуть через препятствие слева
+    while (!beepers_present()) {
+        jump_over_left();  // Прыжок через препятствие слева
     }
     
-    pick_beeper();  // Подбираем найденный бипер
-
-    turn_off();     // Завершаем работу программы
+    pick_beeper();
+    turn_off();
     return 0;
 }
